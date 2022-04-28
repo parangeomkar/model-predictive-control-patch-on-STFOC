@@ -1,0 +1,6 @@
+../Application/User/MPC_math.c:15:7:limitTheta	0	static
+../Application/User/MPC_math.c:29:7:sin2	0	static
+../Application/User/MPC_math.c:52:7:cos2	0	static
+../Application/User/MPC_math.c:61:6:computeSinCos	4	static
+../Application/User/MPC_math.c:76:6:parkTransform	12	static
+../Application/User/MPC_math.c:87:6:clarkeTransform	8	static

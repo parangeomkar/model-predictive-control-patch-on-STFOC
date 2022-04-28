@@ -1,0 +1,8 @@
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:68:6:HAL_MspInit	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:92:6:HAL_ADC_MspInit	48	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:135:6:HAL_ADC_MspDeInit	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:171:6:HAL_TIM_Base_MspInit	40	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:200:6:HAL_TIM_MspPostInit	40	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:234:6:HAL_TIM_Base_MspDeInit	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:268:6:HAL_UART_MspInit	48	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOC401/Src/stm32f4xx_hal_msp.c:341:6:HAL_UART_MspDeInit	8	static
