@@ -1,0 +1,4 @@
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/register_interface.c:40:16:RI_SetRegCommandParser	72	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/register_interface.c:114:16:RI_GetRegCommandParser	136	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/register_interface.c:1275:9:RI_GetIDSize	0	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/register_interface.c:1308:16:RI_GetPtrReg	0	static

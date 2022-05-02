@@ -1,0 +1,4 @@
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/dac_ui.c:55:13:DAC_Init	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/dac_ui.c:81:13:DAC_Exec	4	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/dac_ui.c:112:13:DAC_SetChannelConfig	0	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/dac_ui.c:129:10:DAC_GetChannelConfig	0	static
