@@ -12,10 +12,10 @@ C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431
 C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:411:13:TSK_MediumFrequencyTaskM1	24	static
 C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:340:13:MC_Scheduler	16	static
 C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:877:16:TSK_HighFrequencyTask	104	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1101:13:TSK_SafetyTask_PWMOFF	24	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1079:13:TSK_SafetyTask	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1110:13:TSK_SafetyTask_PWMOFF	24	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1088:13:TSK_SafetyTask	8	static
 C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:302:13:MC_RunMotorControlTasks	8	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1149:23:GetMCI	0	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1165:13:TSK_HardwareFaultTask	8	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1177:13:UI_HandleStartStopButton_cb	8	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1195:13:mc_lock_pins	80	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1158:23:GetMCI	0	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1174:13:TSK_HardwareFaultTask	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1186:13:UI_HandleStartStopButton_cb	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/FOCG431/FOCG431/Src/mc_tasks.c:1204:13:mc_lock_pins	80	static

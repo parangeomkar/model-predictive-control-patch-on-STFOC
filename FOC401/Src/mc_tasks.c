@@ -97,8 +97,8 @@ void TSK_SafetyTask_PWMOFF(uint8_t motor);
 /* USER CODE BEGIN Private Functions */
 
 int i,j,c1,c2;
-float IalphaPred,IbetaPred,IdTemp,IqTemp,IqTx,wr,IqRef,Varray[7][3];
-volatile int16_t IdPred,IqPred;
+float IalphaPred,IbetaPred,IqTx,wr,IqRef,Varray[7][3];
+volatile int16_t IdPred,IqPred,IdTemp,IqTemp;
 
 uint8_t optimalVector,optimalDuty,Sa,Sb,Sc;
 int16_t polePairs;
@@ -111,7 +111,7 @@ int runMPC = 0;
 int hasMPCinit = 0;
 alphabeta_t Valbt;
 
-int16_t Vdc = 8;
+int16_t Vphase = 8;
 
 
 void clarkeTransform(int16_t a, int16_t b, int16_t c, alphabeta_t *Xalbt);
@@ -124,16 +124,16 @@ void initModelPredictiveControl(){
 	ab_t Vab;
 	alphabeta_t Valphabeta;
 
-	c1 = (int)(10027*(1 - (0.75/(16130*0.0004))));
-	c2 = (int)(10027*(1/(16130*0.0004)));
+	c1 = (int)(10027*(1 - (0.65/(10000*0.0007))));
+	c2 = (int)(10027*(1/(10000*0.0007)));
 
-	for(i=0;i<6;i++){
+	for(i=0;i<7;i++){
 		Sa = states[i] & 0x01;
 		Sb = (states[i]>>1) & 0x01;
 		Sc = (states[i]>>2) & 0x01;
 
-		Vab.a = 4*((2*Sa-Sb-Sc))*32767/Vdc;
-		Vab.b = 4*((2*Sb-Sa-Sc))*32767/Vdc;
+		Vab.a = 4*((2*Sa-Sb-Sc))*32767/Vphase;
+		Vab.b = 4*((2*Sb-Sa-Sc))*32767/Vphase;
 
 		Valphabeta = MCM_Clarke(Vab);
 
@@ -953,7 +953,7 @@ inline uint16_t FOC_CurrControllerM1(void)
 
 
 	int speedRPM = SPEED_UNIT_2_RPM(SPD_GetAvrgMecSpeedUnit(speedHandle));
-//	int16_t wr = 4*SPEED_UNIT_2_RPM(MC_GetMecSpeedAverageMotor1())/9.55;
+	int16_t wr = SPEED_UNIT_2_RPM(MC_GetMecSpeedAverageMotor1())/9.55;
 
 	/* Omkar code start */
 
@@ -967,12 +967,12 @@ inline uint16_t FOC_CurrControllerM1(void)
 		runMPC = 1;
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
 
-		IqTemp = (float)Iqd.q/10027;
-		IdTemp = (float)Iqd.d/10027;
+		IqTemp = Iqd.q;
+		IdTemp = Iqd.d;
 
 		cost = 2147483628;
 
-		for(i=0;i<7;i++){
+		for(i=0;i<6;i++){
 
 			if(i<6){
 				Valphabeta.alpha = Varray[i][0];
@@ -984,8 +984,8 @@ inline uint16_t FOC_CurrControllerM1(void)
 				VqdTemp.q = 0;
 			}
 
-			IdPred = ((C1*IdTemp) + (c2*(VqdTemp.d)*Vdc/32767));
-			IqPred = ((C1*IqTemp) + (c2*(VqdTemp.q)*Vdc/32767));
+			IdPred = ((C1*IdTemp/10027) + (wr*IqTemp/2) + (c2*(VqdTemp.d)*Vphase/32767));
+			IqPred = ((C1*IqTemp/10027) - (wr*IdTemp/2) + (c2*(VqdTemp.q)*Vphase/32767));
 
 			costTemp1 = (FOCVars[M1].Iqdref.q - IqPred);
 			costTemp2 = (FOCVars[M1].Iqdref.d - IdPred);
@@ -1016,6 +1016,7 @@ inline uint16_t FOC_CurrControllerM1(void)
 
 	Vqd = Circle_Limitation(pCLM[M1], Vqd);
 	hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*REV_PARK_ANGLE_COMPENSATION_FACTOR;
+
 	Valphabeta = MCM_Rev_Park(Vqd, hElAngle);
 	hCodeError = PWMC_SetPhaseVoltage(pwmcHandle[M1], Valphabeta);
 

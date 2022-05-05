@@ -54,8 +54,8 @@ const MotorConfig_reg_t M1_MotorConfig_reg =
   .polePairs = 4,
   .ratedFlux = 4.0,
   .rs = 0.65,
-  .ls = 0.000400*1.000,
-  .ld = 0.000400,
+  .ls = 0.000360*1.000,
+  .ld = 0.000360,
   .maxCurrent = 10026,
   .name = "No Name M1"
 };

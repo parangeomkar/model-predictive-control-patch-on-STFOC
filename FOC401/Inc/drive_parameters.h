@@ -48,8 +48,8 @@
 #define F2_LOG                           LOG2((16384))
 
 /* State observer constants */
-#define GAIN1                            -11289
-#define GAIN2                            15875
+#define GAIN1                            -11179
+#define GAIN2                            14369
 /*Only in case PLL is used, PLL gains */
 #define PLL_KP_GAIN                      426
 #define PLL_KI_GAIN                      30
@@ -91,10 +91,10 @@
 #define REGULATION_EXECUTION_RATE     1    /*!< FOC execution rate in
                                                            number of PWM cycles */
 /* Gains values for torque and flux control loops */
-#define PID_TORQUE_KP_DEFAULT         3894
+#define PID_TORQUE_KP_DEFAULT         3505
 #define PID_TORQUE_KI_DEFAULT         1266
 #define PID_TORQUE_KD_DEFAULT         100
-#define PID_FLUX_KP_DEFAULT           3894
+#define PID_FLUX_KP_DEFAULT           3505
 #define PID_FLUX_KI_DEFAULT           1266
 #define PID_FLUX_KD_DEFAULT           100
 
@@ -175,15 +175,15 @@
 #define PHASE2_FINAL_CURRENT           10026
 /* Phase 3 */
 #define PHASE3_DURATION                350 /*milliseconds */
-#define PHASE3_FINAL_SPEED_UNIT         (350*SPEED_UNIT/U_RPM)
+#define PHASE3_FINAL_SPEED_UNIT         (466*SPEED_UNIT/U_RPM)
 #define PHASE3_FINAL_CURRENT           10026
 /* Phase 4 */
 #define PHASE4_DURATION                1150 /*milliseconds */
-#define PHASE4_FINAL_SPEED_UNIT         (1500*SPEED_UNIT/U_RPM)
+#define PHASE4_FINAL_SPEED_UNIT         (2000*SPEED_UNIT/U_RPM)
 #define PHASE4_FINAL_CURRENT           10026
 /* Phase 5 */
 #define PHASE5_DURATION                0 /* milliseconds */
-#define PHASE5_FINAL_SPEED_UNIT         (1500*SPEED_UNIT/U_RPM)
+#define PHASE5_FINAL_SPEED_UNIT         (2000*SPEED_UNIT/U_RPM)
 #define PHASE5_FINAL_CURRENT           10026
 
 #define ENABLE_SL_ALGO_FROM_PHASE      3

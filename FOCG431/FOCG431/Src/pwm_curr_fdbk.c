@@ -201,7 +201,6 @@ __attribute__( ( section ( ".ccmram" ) ) )
   */
 __weak uint16_t PWMC_SetPhaseVoltage(PWMC_Handle_t *pHandle, alphabeta_t Valfa_beta)
 {
-  uint16_t returnValue;
 #ifdef NULL_PTR_PWR_CUR_FDB
   if (MC_NULL == pHandle)
   {

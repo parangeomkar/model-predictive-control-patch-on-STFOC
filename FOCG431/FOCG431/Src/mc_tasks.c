@@ -116,16 +116,16 @@ int switchingEffort[6][6] = {{0,1,2,3,2,1},
 							 {2,3,2,1,0,1},
 							 {1,2,3,2,1,0}
 							};
-
 int sectorGroup[6][2] = {{0,1},
-							 {1,2},
-							 {2,3},
-							 {3,4},
-							 {4,5},
-							 {5,0}
-							};
+						 {1,2},
+						 {2,3},
+						 {3,4},
+						 {4,5},
+						 {5,0}
+						};
 
 uint16_t timerPWMPeriod[7][3];
+
 int oldOptimalVector = 0;
 int runMPC = 0;
 int hasMPCinit = 0;
@@ -1001,12 +1001,12 @@ inline uint16_t FOC_CurrControllerM1(void)
 		runMPC = 1;
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
 
-		IqTemp = Iqd.q;
-		IdTemp = Iqd.d;
-
 		cost = 2147483628;
 
-		for(i=0;i<6;i++){
+		IqTemp = ((c1_mpc*Iqd.d/10027) + (4*wr*Iqd.q/(10027*2))  + (c2_mpc*(FOCVars[M1].Vqd.d)*Vphase/32767));
+		IqTemp = ((c1_mpc*Iqd.q/10027) - (4*wr*Iqd.d/(10027*2)) - (19*wr)  + (c2_mpc*(FOCVars[M1].Vqd.q)*Vphase/32767));
+
+		for(i=0;i<7;i++){
 //			uint32_t m = switchingEffort[oldOptimalVector][i];
 
 //			if(i<6){
@@ -1032,10 +1032,10 @@ inline uint16_t FOC_CurrControllerM1(void)
 			if(costTemp2<0){
 				costTemp2 = -costTemp2;
 			}
-//
-//			if(IdPred > 10027){
-//				costTemp1 += 10000;
-//			}
+
+			if(IdPred > 9500){
+				costTemp1 += 10000;
+			}
 
 			costTemp1 = costTemp1*costTemp1;
 			costTemp2 = costTemp2*costTemp2;
@@ -1058,6 +1058,15 @@ inline uint16_t FOC_CurrControllerM1(void)
 	hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*REV_PARK_ANGLE_COMPENSATION_FACTOR;
 	Valphabeta = MCM_Rev_Park(Vqd, hElAngle);
 
+	if(runMPC){
+		pwmcHandle[M1]->CntPhA = timerPWMPeriod[optimalVector][0];
+		pwmcHandle[M1]->CntPhB = timerPWMPeriod[optimalVector][1];
+		pwmcHandle[M1]->CntPhC = timerPWMPeriod[optimalVector][2];
+
+		pwmcHandle[M1]->lowDuty = timerPWMPeriod[optimalVector][0];
+		pwmcHandle[M1]->midDuty = timerPWMPeriod[optimalVector][1];
+		pwmcHandle[M1]->highDuty = timerPWMPeriod[optimalVector][2];
+	}
 
 	hCodeError = PWMC_SetPhaseVoltage(pwmcHandle[M1], Valphabeta);
 

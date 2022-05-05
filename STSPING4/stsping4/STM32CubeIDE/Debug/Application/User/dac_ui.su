@@ -1,0 +1,4 @@
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/dac_ui.c:55:13:DAC_Init	16	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/dac_ui.c:96:13:DAC_Exec	8	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/dac_ui.c:131:13:DAC_SetChannelConfig	0	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/dac_ui.c:148:10:DAC_GetChannelConfig	0	static
