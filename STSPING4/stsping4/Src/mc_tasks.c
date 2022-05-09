@@ -105,6 +105,7 @@ uint8_t optimalVector,Sa,Sb,Sc,sector;
 int16_t polePairs;
 
 
+PID_Handle_t *pPIDSpeed[NBR_OF_MOTORS] = {&PIDSpeedHandle_M1};
 
 
 int states[7] = {1,3,2,6,4,5,0};
@@ -155,25 +156,20 @@ void initModelPredictiveControl(){
 		Sb = (states[i]>>1) & 0x01;
 		Sc = (states[i]>>2) & 0x01;
 
-		timerPWMPeriod[i][0] = Sa==1?4000:350;
-		timerPWMPeriod[i][1] = Sb==1?4000:350;
-		timerPWMPeriod[i][2] = Sc==1?4000:350;
-
 		Vab.a = 4*((2*Sa-Sb-Sc))*32767/8;
 		Vab.b = 4*((2*Sb-Sa-Sc))*32767/8;
 
 		Valphabeta = MCM_Clarke(Vab);
 
-		Varray[i][0] = Valphabeta.alpha;
-		Varray[i][1] = Valphabeta.beta;
-
-		for(int j=0;j<361;j++){
+		for(int j=0;j<360;j++){
 			if(j<=180){
 				mpcAngle = j*32767/180;
 			} else {
-				mpcAngle = (j-362)*32767/180;
+				mpcAngle = -(360-j)*32767/180;
 			}
+
 			Vdq = MCM_Park(Valphabeta, mpcAngle);
+
 			mpcTableD[i][j] = c2_mpc*Vdq.d/4096;
 			mpcTableQ[i][j] = c2_mpc*Vdq.q/4096;
 		}
@@ -985,123 +981,100 @@ __attribute__((section (".ccmram")))
   * @retval int16_t It returns MC_NO_FAULTS if the FOC has been ended before
   *         next PWM Update event, MC_FOC_DURATION otherwise
   */
+int32_t errGAMain;
+int16_t errGA,errGAi,errGAp;
+int16_t KpGA = -1;
+int16_t KiGA = -1;
+uint16_t startGATuning = 0, iGA;
+int16_t setGA = 1500;
+volatile int16_t diffGA;
 inline uint16_t FOC_CurrControllerM1(void)
 {
-	volatile qd_t Iqd, Vqd, VqdTemp;
-	volatile int costTemp1,costTemp2,cost;
-	ab_t Iab;
-	alphabeta_t Ialphabeta, Valphabeta;
-	int16_t IqRefMPC;
+  qd_t Iqd, Vqd;
+  ab_t Iab;
+  alphabeta_t Ialphabeta, Valphabeta;
 
-	int16_t hElAngle;
-	uint16_t hCodeError;
-	SpeednPosFdbk_Handle_t *speedHandle;
+  int16_t hElAngle;
+  uint16_t hCodeError;
+  SpeednPosFdbk_Handle_t *speedHandle;
 
-	speedHandle = STC_GetSpeedSensor(pSTC[M1]);
-	hElAngle = SPD_GetElAngle(speedHandle);
-	hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*PARK_ANGLE_COMPENSATION_FACTOR;
-	PWMC_GetPhaseCurrents(pwmcHandle[M1], &Iab);
-	Ialphabeta = MCM_Clarke(Iab);
-	Iqd = MCM_Park(Ialphabeta, hElAngle);
+  speedHandle = STC_GetSpeedSensor(pSTC[M1]);
+  hElAngle = SPD_GetElAngle(speedHandle);
+  hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*PARK_ANGLE_COMPENSATION_FACTOR;
+  PWMC_GetPhaseCurrents(pwmcHandle[M1], &Iab);
+  RCM_ReadOngoingConv();
+  RCM_ExecNextConv();
+  Ialphabeta = MCM_Clarke(Iab);
+  Iqd = MCM_Park(Ialphabeta, hElAngle);
+  Vqd.q = PI_Controller(pPIDIq[M1], (int32_t)(FOCVars[M1].Iqdref.q) - Iqd.q);
+  Vqd.d = PI_Controller(pPIDId[M1], (int32_t)(FOCVars[M1].Iqdref.d) - Iqd.d);
+
+  Vqd = Circle_Limitation(pCLM[M1], Vqd);
+  hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*REV_PARK_ANGLE_COMPENSATION_FACTOR;
+  Valphabeta = MCM_Rev_Park(Vqd, hElAngle);
+  hCodeError = PWMC_SetPhaseVoltage(pwmcHandle[M1], Valphabeta);
+
+  FOCVars[M1].Vqd = Vqd;
+  FOCVars[M1].Iab = Iab;
+  FOCVars[M1].Ialphabeta = Ialphabeta;
+  FOCVars[M1].Iqd = Iqd;
+  FOCVars[M1].Valphabeta = Valphabeta;
+  FOCVars[M1].hElAngle = hElAngle;
+
+  if(KpGA == -1){
+	  KpGA = pPIDSpeed[M1]->hKpGain;
+	  KiGA = pPIDSpeed[M1]->hKiGain;
+  }
+
+  if(KpGA != pPIDSpeed[M1]->hKpGain && KiGA != pPIDSpeed[M1]->hKiGain){
+	  KpGA = pPIDSpeed[M1]->hKpGain;
+	  KiGA = pPIDSpeed[M1]->hKiGain;
+
+	  startGATuning = 1;
+	  errGA = 0;
+	  errGAMain = 0;
+	  iGA = 0;
+  }
+
+  if(startGATuning && iGA <8000){
+	  diffGA = setGA - SPEED_UNIT_2_RPM(MC_GetMecSpeedAverageMotor1());
+
+	  if(iGA == 0){
+		  MC_ProgramSpeedRampMotor1(RPM_2_SPEED_UNIT(1000), 0);
+		  setGA = 1000;
+	  }
+
+	  if(iGA == 3000){
+		  MC_ProgramSpeedRampMotor1(RPM_2_SPEED_UNIT(1500), 0);
+		  setGA = 1500;
+	  }
+
+	  if(iGA == 5000){
+		  MC_ProgramSpeedRampMotor1(RPM_2_SPEED_UNIT(1000), 0);
+		  setGA = 1000;
+	  }
 
 
-	int speedRPM = SPEED_UNIT_2_RPM(SPD_GetAvrgMecSpeedUnit(speedHandle));
-	int16_t wr = SPEED_UNIT_2_RPM(MC_GetMecSpeedAverageMotor1())/9.55;
+	  if(iGA == 7990){
+		  MC_ProgramSpeedRampMotor1(RPM_2_SPEED_UNIT(1500), 0);
+		  setGA = 1500;
+	  }
 
-	/* Omkar code start */
+	  if(diffGA < 0){
+		  diffGA = -1*diffGA;
+	  }
 
-	if(speedRPM > 1900 || runMPC){
-
-		if(hElAngle > 0){
-			mpcAngle = (hElAngle*180/32767);
-		} else {
-			mpcAngle = (360 + (hElAngle*180/32767));
-		}
-
-		if(mpcAngle > 360){
-			mpcAngle = 360;
-		}
-
-		runMPC = 1;
-
-		cost = 2147483628;
-
-		IdTemp = (c1_mpc*Iqd.d/1455) + (4*wr*Iqd.q/(1455*2));
-		IqTemp = (c1_mpc*Iqd.q/1455) - (4*wr*Iqd.d/(1455*2)) - (19*wr);
-
-		IqRefMPC = FOCVars[M1].Iqdref.q*689/100;
-
-		for(i=0;i<6;i++){
-			if(i<6){
-				if(i<3){
-					VqdTemp.d = mpcTableD[i][mpcAngle];
-					VqdTemp.q = mpcTableQ[i][mpcAngle];
-				} else {
-					VqdTemp.d = -mpcTableD[i-3][mpcAngle];
-					VqdTemp.q = -mpcTableQ[i-3][mpcAngle];
-				}
-			} else {
-				VqdTemp.d = 0;
-				VqdTemp.q = 0;
-			}
-
-			IdPred = IdTemp + VqdTemp.d;
-			IqPred = IqTemp + VqdTemp.q;
-
-			costTemp1 = (IqRefMPC - IqPred);
-			costTemp2 = -IdPred;
-
-			if(costTemp1<0){
-				costTemp1 = -costTemp1;
-			}
-
-			if(costTemp2<0){
-				costTemp2 = -costTemp2;
-			}
-
-			costTemp1 = costTemp1*costTemp1;
-			costTemp2 = costTemp2*costTemp2;
-
-			if((costTemp1 + costTemp2) < cost){
-				optimalVector = i;
-				cost = costTemp1+costTemp2;
-				Vqd.d = VqdTemp.d;
-				Vqd.q = VqdTemp.q;
-			}
-		}
-	} else {
-		  Vqd.q = PI_Controller(pPIDIq[M1], (int32_t)(FOCVars[M1].Iqdref.q) - Iqd.q);
-		  Vqd.d = PI_Controller(pPIDId[M1], (int32_t)(FOCVars[M1].Iqdref.d) - Iqd.d);
-	}
-
-	/* Omkar code end */
-
-	Vqd = Circle_Limitation(pCLM[M1], Vqd);
-	hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*REV_PARK_ANGLE_COMPENSATION_FACTOR;
-	Valphabeta = MCM_Rev_Park(Vqd, hElAngle);
-//
-//	if(runMPC){
-//		pwmcHandle[M1]->CntPhA = timerPWMPeriod[optimalVector][0];
-//		pwmcHandle[M1]->CntPhB = timerPWMPeriod[optimalVector][1];
-//		pwmcHandle[M1]->CntPhC = timerPWMPeriod[optimalVector][2];
-
-//		pwmcHandle[M1]->lowDuty = timerPWMPeriod[optimalVector][0];
-//		pwmcHandle[M1]->midDuty = timerPWMPeriod[optimalVector][1];
-//		pwmcHandle[M1]->highDuty = timerPWMPeriod[optimalVector][2];
-//	}
-
-	hCodeError = PWMC_SetPhaseVoltage(pwmcHandle[M1], Valphabeta);
-
-	FOCVars[M1].Vqd = Vqd;
-	FOCVars[M1].Iab = Iab;
-	FOCVars[M1].Ialphabeta = Ialphabeta;
-	FOCVars[M1].Iqd = Iqd;
-	FOCVars[M1].Valphabeta = Valphabeta;
-	FOCVars[M1].hElAngle = hElAngle;
-
-	return(hCodeError);
+	  errGAMain += diffGA/10;
+	  errGA = errGAMain/20;
+	  iGA++;
+  } else {
+	  iGA = 0;
+	  startGATuning = 0;
+	  MC_ProgramSpeedRampMotor1(RPM_2_SPEED_UNIT(1000), 0);
+	  setGA = 1000;
+  }
+  return(hCodeError);
 }
-
 
 /**
   * @brief  Executes safety checks (e.g. bus voltage and temperature) for all drive instances.
