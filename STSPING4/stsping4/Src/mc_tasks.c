@@ -98,7 +98,8 @@ void TSK_SafetyTask_PWMOFF(uint8_t motor);
 /* USER CODE BEGIN Private Functions */
 
 int i,j,c1_mpc,c2_mpc;
-float IalphaPred,IbetaPred,IqTx,wr,Varray[7][3];
+float IalphaPred,IbetaPred,IqTx;
+int16_t Varray[7][3];
 volatile int16_t IdPred,IqPred,IdTemp,IqTemp;
 
 uint8_t optimalVector,optimalDuty,Sa,Sb,Sc;
@@ -121,6 +122,8 @@ int hasMPCinit = 0;
 alphabeta_t Valbt;
 
 int16_t Vphase = 8;
+int16_t sinTable[361] = {0,572,1144,1715,2286,2856,3425,3993,4560,5126,5690,6252,6813,7371,7927,8481,9032,9580,10126,10668,11207,11743,12275,12803,13328,13848,14364,14876,15383,15886,16384,16876,17364,17846,18323,18794,19260,19720,20173,20621,21062,21497,21925,22347,22762,23170,23571,23964,24351,24730,25101,25465,25821,26169,26509,26841,27165,27481,27788,28087,28377,28659,28932,29196,29451,29697,29934,30162,30381,30591,30791,30982,31163,31335,31498,31650,31794,31927,32051,32165,32269,32364,32448,32523,32587,32642,32687,32722,32747,32762,32767,32762,32747,32722,32687,32642,32587,32523,32448,32364,32269,32165,32051,31927,31794,31650,31498,31335,31163,30982,30791,30591,30381,30162,29934,29697,29451,29196,28932,28659,28377,28087,27788,27481,27165,26841,26509,26169,25821,25465,25101,24730,24351,23964,23571,23170,22762,22347,21925,21497,21062,20621,20173,19720,19260,18794,18323,17846,17364,16876,16384,15886,15383,14876,14364,13848,13328,12803,12275,11743,11207,10668,10126,9580,9032,8481,7927,7371,6813,6252,5690,5126,4560,3993,3425,2856,2286,1715,1144,572,	0,-572,-1144,-1715,-2286,-2856,-3425,-3993,-4560,-5126,-5690,-6252,-6813,-7371,-7927,-8481,-9032,-9580,-10126,-10668,-11207,-11743,-12275,-12803,-13328,-13848,-14364,-14876,-15383,-15886,-16384,-16876,-17364,-17846,-18323,-18794,-19260,-19720,-20173,-20621,-21062,-21497,-21925,-22347,-22762,-23170,-23571,-23964,-24351,-24730,-25101,-25465,-25821,-26169,-26509,-26841,-27165,-27481,-27788,-28087,-28377,-28659,-28932,-29196,-29451,-29697,-29934,-30162,-30381,-30591,-30791,-30982,-31163,-31335,-31498,-31650,-31794,-31927,-32051,-32165,-32269,-32364,-32448,-32523,-32587,-32642,-32687,-32722,-32747,-32762,-32767,-32762,-32747,-32722,-32687,-32642,-32587,-32523,-32448,-32364,-32269,-32165,-32051,-31927,-31794,-31650,-31498,-31335,-31163,-30982,-30791,-30591,-30381,-30162,-29934,-29697,-29451,-29196,-28932,-28659,-28377,-28087,-27788,-27481,-27165,-26841,-26509,-26169,-25821,-25465,-25101,-24730,-24351,-23964,-23571,-23170,-22762,-22347,-21925,-21497,-21062,-20621,-20173,-19720,-19260,-18794,-18323,-17846,-17364,-16876,-16384,-15886,-15383,-14876,-14364,-13848,-13328,-12803,-12275,-11743,-11207,-10668,-10126,-9580,-9032,-8481,-7927,-7371,-6813,-6252,-5690,-5126,-4560,-3993,-3425,-2856,-2286,-1715,-1144,-572,	0};
+
 
 
 void initModelPredictiveControl(){
@@ -145,13 +148,24 @@ void initModelPredictiveControl(){
 	}
 }
 
-int absVal(int x){
-	if(x<0){
-		return  -x;
+int16_t sinMPC(int16_t thetaElec){
+	if(thetaElec < 0){
+		thetaElec = ((360+thetaElec) - 360*(1+(thetaElec/360)));
 	} else {
-		return x;
+		thetaElec = (thetaElec - 360*(thetaElec/360));
 	}
+
+  if(thetaElec <= 90){
+    return sinTable[thetaElec];
+  } else if(thetaElec > 90 && thetaElec <=180){
+    return sinTable[180 - thetaElec];
+  } else if(thetaElec > 180 && thetaElec <= 270){
+    return -sinTable[thetaElec - 180];
+  } else {
+    return -sinTable[360 - thetaElec];
+  }
 }
+
 /* USER CODE END Private Functions */
 /**
   * @brief  It initializes the whole MC core according to user defined
@@ -958,11 +972,11 @@ __attribute__((section (".ccmram")))
 //volatile int16_t diffGA;
 inline uint16_t FOC_CurrControllerM1(void)
 {
-	volatile qd_t Iqd, Vqd, VqdTemp;
+	volatile qd_t Iqd, Vqd,VqdTemp;
 	volatile int costTemp1,costTemp2,cost;
 	ab_t Iab;
 	alphabeta_t Ialphabeta, Valphabeta;
-
+	int16_t angleMPC,Vd,Vq;
 
 	int16_t hElAngle;
 	uint16_t hCodeError;
@@ -976,10 +990,17 @@ inline uint16_t FOC_CurrControllerM1(void)
 	Iqd = MCM_Park(Ialphabeta, hElAngle);
 
 
+
+	/* Omkar code start */
+
 	int speedRPM = SPEED_UNIT_2_RPM(SPD_GetAvrgMecSpeedUnit(speedHandle));
 	int16_t wr = SPEED_UNIT_2_RPM(MC_GetMecSpeedAverageMotor1())/9.55;
 
-	/* Omkar code start */
+	if(hElAngle < 0){
+		angleMPC = 360+(hElAngle*180/32767);
+	} else {
+		angleMPC = (hElAngle*180/32767);
+	}
 
 	if(!hasMPCinit){
 		hasMPCinit = 1;
@@ -993,13 +1014,24 @@ inline uint16_t FOC_CurrControllerM1(void)
 		IqTemp = Iqd.q;
 		IdTemp = Iqd.d;
 
-		IqRef = FOCVars[M1].Iqdref.q*446/100;
+		IqRef = FOCVars[M1].Iqdref.q*686/100;
 
 		cost = 2147483628;
 
 
-		for(i=0;i<6;i++){
+		for(i=0; i<6; i++){
+
 //			int m = switchingEffort[oldOptimalVector][i];
+
+
+//			if(i<6){
+//				VqdTemp.d = sinMPC(angleMPC + i*60);
+//				VqdTemp.q = sinMPC(angleMPC + 270 + i*60);
+//			} else {
+//				VqdTemp.d = 0;
+//				VqdTemp.q = 0;
+//			}
+
 			if(i<6){
 				Valphabeta.alpha = Varray[i][0];
 				Valphabeta.beta  = Varray[i][1];
@@ -1009,6 +1041,7 @@ inline uint16_t FOC_CurrControllerM1(void)
 				VqdTemp.d = 0;
 				VqdTemp.q = 0;
 			}
+
 
 			IdPred = ((c1_mpc*IdTemp/1456) + (4*wr*IqTemp/(1456*2))  + (c2_mpc*(VqdTemp.d)*Vphase/32767));
 			IqPred = ((c1_mpc*IqTemp/1456) - (4*wr*IdTemp/(1456*2)) - (19*wr)  + (c2_mpc*(VqdTemp.q)*Vphase/32767));
@@ -1033,12 +1066,16 @@ inline uint16_t FOC_CurrControllerM1(void)
 				Vqd.d = VqdTemp.d;
 				Vqd.q = VqdTemp.q;
 			}
+
 		}
 	} else {
 		  Vqd.q = PI_Controller(pPIDIq[M1], (int32_t)(FOCVars[M1].Iqdref.q) - Iqd.q);
 		  Vqd.d = PI_Controller(pPIDId[M1], (int32_t)(FOCVars[M1].Iqdref.d) - Iqd.d);
 	}
 	/* Omkar code end */
+
+	Sa = states[optimalVector] & 0x01;
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, Sa);
 
 	Vqd = Circle_Limitation(pCLM[M1], Vqd);
 	hElAngle += SPD_GetInstElSpeedDpp(speedHandle)*REV_PARK_ANGLE_COMPENSATION_FACTOR;

@@ -1,4 +1,4 @@
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:42:16:RI_SetRegCommandParser	72	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:116:16:RI_GetRegCommandParser	136	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:1277:9:RI_GetIDSize	0	static
-C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:1310:16:RI_GetPtrReg	0	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:40:16:RI_SetRegCommandParser	72	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:114:16:RI_GetRegCommandParser	136	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:1275:9:RI_GetIDSize	0	static
+C:/Users/parangeo/OneDrive - STMicroelectronics/Documents/FOC401/STSPING4/stsping4/Src/register_interface.c:1308:16:RI_GetPtrReg	0	static

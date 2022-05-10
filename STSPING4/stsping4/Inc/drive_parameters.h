@@ -173,15 +173,15 @@
 #define PHASE1_FINAL_SPEED_UNIT         (0*SPEED_UNIT/U_RPM)
 #define PHASE1_FINAL_CURRENT           0
 /* Phase 2 */
-#define PHASE2_DURATION                0 /*milliseconds */
+#define PHASE2_DURATION                200 /*milliseconds */
 #define PHASE2_FINAL_SPEED_UNIT         (0*SPEED_UNIT/U_RPM)
 #define PHASE2_FINAL_CURRENT           925
 /* Phase 3 */
-#define PHASE3_DURATION                500 /*milliseconds */
-#define PHASE3_FINAL_SPEED_UNIT         (500*SPEED_UNIT/U_RPM)
+#define PHASE3_DURATION                1000 /*milliseconds */
+#define PHASE3_FINAL_SPEED_UNIT         (333*SPEED_UNIT/U_RPM)
 #define PHASE3_FINAL_CURRENT           925
 /* Phase 4 */
-#define PHASE4_DURATION                1000 /*milliseconds */
+#define PHASE4_DURATION                3500 /*milliseconds */
 #define PHASE4_FINAL_SPEED_UNIT         (1500*SPEED_UNIT/U_RPM)
 #define PHASE4_FINAL_CURRENT           925
 /* Phase 5 */
@@ -191,7 +191,7 @@
 
 #define ENABLE_SL_ALGO_FROM_PHASE      3
 /* Sensor-less rev-up sequence */
-#define STARTING_ANGLE_DEG             0  /*!< degrees [0...359] */
+#define STARTING_ANGLE_DEG             90  /*!< degrees [0...359] */
 /* Observer start-up output conditions  */
 #define OBS_MINIMUM_SPEED_RPM          580
 
@@ -210,7 +210,7 @@
                                                              without being considered wrong.
                                                              In 1/16 of forced speed */
 
-#define TRANSITION_DURATION            200  /* Switch over duration, ms */
+#define TRANSITION_DURATION            2000  /* Switch over duration, ms */
 /******************************   BUS VOLTAGE Motor 1  **********************/
 #define  M1_VBUS_SAMPLING_TIME  LL_ADC_SAMPLING_CYCLE(47)
 /******************************   Temperature sensing Motor 1  **********************/
