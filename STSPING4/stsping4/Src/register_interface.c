@@ -755,13 +755,13 @@ uint8_t RI_GetReg (uint16_t dataID, uint8_t * data, uint16_t *size, int16_t free
 
             case MC_REG_HEATS_TEMP:
             {
-              *regdata16 = errGA;//NTC_GetAvTemp_C(pTemperatureSensor[motorID]);
+              *regdata16 = NTC_GetAvTemp_C(pTemperatureSensor[motorID]);
               break;
             }
 
             case MC_REG_MOTOR_POWER:
             {
-              *regdata16 = errGA;//MPM_GetAvrgElMotorPowerW((MotorPowMeas_Handle_t *)pMPM[motorID]); //cstat !MISRAC2012-Rule-11.3
+              *regdata16 = MPM_GetAvrgElMotorPowerW((MotorPowMeas_Handle_t *)pMPM[motorID]); //cstat !MISRAC2012-Rule-11.3
               break;
             }
 
